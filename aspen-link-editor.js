@@ -7,8 +7,9 @@ import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/paper-tooltip/paper-tooltip.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@vaadin/vaadin-text-field';
-import {AspenSecurableMixin} from '@aspen-elements/aspen-securable-mixin';
-import {AspenLinkFldMixin} from '@aspen-elements/aspen-link-fld-mixin/aspen-link-fld-mixin.js';
+import { AspenSecurableMixin } from '@aspen-elements/aspen-securable-mixin';
+import { AspenLinkFldMixin } from '@aspen-elements/aspen-link-fld-mixin/aspen-link-fld-mixin.js';
+import '@polymer/polymer/lib/elements/dom-if.js';
 
 /**
  * `aspen-link-editor`  To use a link editor...
@@ -23,54 +24,118 @@ import {AspenLinkFldMixin} from '@aspen-elements/aspen-link-fld-mixin/aspen-link
  * @polymer
  * @extends {Polymer.Element}
  */
-class AspenLinkEditor extends AspenLinkFldMixin(AspenSecurableMixin(PolymerElement)) {
+class AspenLinkEditor extends AspenLinkFldMixin(
+  AspenSecurableMixin(PolymerElement)
+) {
   static get template() {
     return html`
-        <style>
-            :host {
-                display: block;
-                --icon-size: 24px;
-                --icon-color: var(--app-header-color, #909090);
-            }
-            paper-icon-button{
-                --iron-icon-height: var(--icon-size);
-                --iron-icon-width: var(--icon-size);
-                color: var(--icon-color);
-               margin-top: 20px;
-            }
+      <style>
+        :host {
+          display: block;
+          --icon-size: 24px;
+          --icon-color: var(--app-header-color, #909090);
+        }
+        paper-icon-button {
+          --iron-icon-height: var(--icon-size);
+          --iron-icon-width: var(--icon-size);
+          color: var(--icon-color);
+          margin-top: 8px;
+        }
 
-            paper-icon-button[disabled]{
-                color: #909090;
-            }
-            .fld{
-                @apply --layout-horizontal;
-            }
-            vaadin-text-field{
-                width: 100%;
-            }
-        </style>
-        <div class="fld">
+        .green-dot {
+          width: 7px;
+          margin-top: 15px;
+          height: 7px;
+          border-radius: 50%;
+          background-color: #44d92c;
+        }
 
-            
-            <paper-tooltip for="button" position="bottom" offset="14">
-              [[tooltip]]
-            </paper-tooltip>
-            
-            <paper-icon-button id="button" icon="[[icon]]" disabled="[[isDisabled]]" on-tap="__launch"></paper-icon-button>
-            <vaadin-text-field label="[[label]]" value="{{value}}" placeholder="[[placeholder]]" readonly="[[!hasRole]]">
-            </vaadin-text-field>
-                
+        .silver-dot {
+          width: 7px;
+          margin-top: 15px;
+          height: 7px;
+          border-radius: 50%;
+          background-color: silver;
+        }
+
+        .icon-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-direction: column;
+        }
+
+        paper-icon-button[disabled] {
+          color: #909090;
+        }
+        .fld {
+          display: flex;
+          align-items: center;
+        }
+        vaadin-text-field {
+          width: 100%;
+        }
+      </style>
+      <div class="fld">
+        <paper-tooltip for="button" position="bottom" offset="14">
+          [[tooltip]]
+        </paper-tooltip>
+
+        <div class="icon-wrapper">
+          <template is="dom-if" if="{{hasNewData}}">
+            <div class="green-dot"></div>
+          </template>
+          <template is="dom-if" if="{{!hasNewData}}">
+            <div class="silver-dot"></div>
+          </template>
+
+          <paper-icon-button
+            id="button"
+            icon="[[icon]]"
+            disabled="[[isDisabled]]"
+            on-tap="__launch"
+          ></paper-icon-button>
         </div>
-`;
+        <vaadin-text-field
+          onfocus="[[onFocusTextField]]"
+          label="[[label]]"
+          value="{{value}}"
+          placeholder="[[placeholder]]"
+          readonly="[[!hasRole]]"
+        >
+        </vaadin-text-field>
+      </div>
+    `;
+  }
+
+  static get properties() {
+    return {
+      /* Prop function used to open/close search dialogs */
+      onLabelClick: {
+        type: Function
+      },
+      /* Prop which provides information if backend has a new data */
+      hasNewData: {
+        type: Boolean,
+        value: null
+      },
+      /*Text field value */
+      value: {
+        type: String
+      },
+      /*Sets to a readonly text field */
+      readonly: {
+        type: Boolean
+      }
+    };
   }
 
   /**
    * String providing the tag name to register the element under.
    */
   static get is() {
-      return 'aspen-link-editor';
+    return 'aspen-link-editor';
   }
-
 
   /**
    * Instance of the element is created/upgraded. Use: initializing state,
@@ -78,18 +143,32 @@ class AspenLinkEditor extends AspenLinkFldMixin(AspenSecurableMixin(PolymerEleme
    * @constructor
    */
   constructor() {
-      super();
+    super();
+  }
+  /**
+   * onFocusTextField - Method which gets called after vaadin-text-field element gets in focus
+   *
+   * @param {HTMLElement} e
+   * @memberof AspenLinkEditor
+   */
+  onFocusTextField(e) {
+    let label = e.path[3].children[0];
+
+    if (label) {
+      label.style.cursor = 'pointer';
+      label.addEventListener('click', e => this.onLabelClick(e));
+    }
   }
 
   /**
-   * Use for one-time configuration of your component after local DOM is initialized. 
+   * Use for one-time configuration of your component after local DOM is initialized.
    */
   ready() {
-      super.ready();
+    super.ready();
 
-      afterNextRender(this, function() {
-          
-      });
+    afterNextRender(this, function() {});
+
+    this.onFocusTextField = this.onFocusTextField.bind(this);
   }
 }
 
