@@ -10,6 +10,8 @@ import '@vaadin/vaadin-text-field';
 import { AspenSecurableMixin } from '@aspen-elements/aspen-securable-mixin';
 import { AspenLinkFldMixin } from '@aspen-elements/aspen-link-fld-mixin/aspen-link-fld-mixin.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
+import './aspen-link-editor-styles';
+import '@polymer/polymer/lib/elements/custom-style.js';
 
 /**
  * `aspen-link-editor`  To use a link editor...
@@ -29,7 +31,7 @@ class AspenLinkEditor extends AspenLinkFldMixin(
 ) {
   static get template() {
     return html`
-      <style>
+      <style include="aspen-link-editor-styles" is="custom-style">
         :host {
           display: block;
           --icon-size: 24px;
@@ -71,9 +73,6 @@ class AspenLinkEditor extends AspenLinkFldMixin(
         .fld {
           display: flex;
           align-items: center;
-        }
-        vaadin-text-field {
-          width: 100%;
         }
       </style>
       <div class="fld">
